@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Category {
+  WORK
+  SCHOOL
+  HOME
+  PUBLIC_SPACE
+  SOCIAL_MEDIA
+  OTHER
+}
+
+enum ContentStatus {
+  PENDING
+  PUBLISHED
+  REMOVED
+}
+
+enum ReactionType {
+  RELATE
+  SUPPORT
+}
+
+enum ReportTargetType {
+  STORY
+  COMMENT
+}
+
+enum ReportReason {
+  RUDE
+  HATE_SPEECH
+  SARA
+  PII_LEAK
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+}
+
+enum ReportAction {
+  KEEP
+  REMOVE
+  WARN
+}
+
+enum OtpPurpose {
+  PASSWORD_RESET
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  stories           Story[]
+  comments          Comment[]
+  reactions         Reaction[]
+  bookmarks         Bookmark[]
+  reports           Report[]   @relation("reporter")
+  resolvedReports   Report[]   @relation("resolver")
+}
+
+model Story {
+  id          String        @id @default(uuid())
+  authorId    String
+  title       String
+  category    Category
+  content     String        @db.Text
+  isAnonymous Boolean       @default(false)
+  status      ContentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  reactions Reaction[]
+  bookmarks Bookmark[]
+}
+
+model Comment {
+  id        String        @id @default(uuid())
+  storyId   String
+  authorId  String
+  content   String        @db.Text
+  status    ContentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  story  Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Reaction {
+  id      String       @id @default(uuid())
+  storyId String
+  userId  String
+  type    ReactionType
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  storyId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+}
+
+model Report {
+  id           String           @id @default(uuid())
+  targetType   ReportTargetType
+  targetId     String
+  reporterId   String
+  reason       ReportReason
+  details      String?          @db.Text
+  status       ReportStatus     @default(PENDING)
+  action       ReportAction?
+  resolvedById String?
+  createdAt    DateTime         @default(now())
+  resolvedAt   DateTime?
+
+  reporter   User  @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy User? @relation("resolver", fields: [resolvedById], references: [id])
+}
+
+model Otp {
+  id          String     @id @default(uuid())
+  email       String
+  codeHash    String
+  purpose     OtpPurpose
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime   @default(now())
+}
+
+model Article {
+  id         String   @id @default(uuid())
+  title      String
+  slug       String   @unique
+  summary    String
+  content    String   @db.Text
+  coverImage String?
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model BannedWord {
+  id        String   @id @default(uuid())
+  word      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}

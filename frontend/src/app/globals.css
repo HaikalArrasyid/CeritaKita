@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-canvas: #FAFAF7;
+  --color-surface: #FFFFFF;
+  --color-surface-tinted: #F3ECE2;
+  --color-brand-navy: #1A232E;
+  --color-brand-footer: #1C2733;
+  --color-brand-coral: #D4836A;
+  --color-border-subtle: #E5E2DC;
+  
+  --font-serif: var(--font-playfair), serif;
+  --font-sans: var(--font-jakarta), sans-serif;
+}
+
+.bg-dot-grid {
+  background-color: var(--color-canvas);
+  background-image: radial-gradient(#D6D1C7 1px, transparent 1px);
+  background-size: 24px 24px;
+}

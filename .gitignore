@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Environment (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# Coverage / test
+coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Prisma
+backend/prisma/dev.db
+
+# Data & Uploads
+backend/data/
+backend/uploads/
